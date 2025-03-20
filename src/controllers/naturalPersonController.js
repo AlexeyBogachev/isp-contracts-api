@@ -11,7 +11,7 @@ const getNaturalPersons = async (req, res) => {
 };
 
 const getNaturalPersonByUserId = async (req, res) => {
-    const { id } = req.params; // id пользователя
+    const { id } = req.params;
     try {
         const naturalPerson = await NaturalPerson.findOne({ where: { id_user: id } });
         if (!naturalPerson) {
