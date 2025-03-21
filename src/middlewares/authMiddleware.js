@@ -13,7 +13,8 @@ const authMiddleware = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        res.status(403).json({ message: 'Неверный токен' });
+        res.clearCookie('access_token');
+        return res.status(401).json({ message: 'Сессия истекла, выполните вход заново' });
     }
 };
 

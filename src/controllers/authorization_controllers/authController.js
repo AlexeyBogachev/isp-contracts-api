@@ -82,4 +82,20 @@ const logout = (req, res) => {
     res.json({ message: 'Выход выполнен' });
 };
 
-module.exports = { registerUser, registerEmployee, login, logout };
+const checkAuth = (req, res) => {
+    const token = req.cookies.access_token;
+
+    if (!token) {
+        return res.status(401).json({ message: 'Не авторизован' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, secret);
+        res.json({ message: 'Авторизован', role: decoded.role });
+    } catch (err) {
+        res.clearCookie('access_token');
+        res.status(401).json({ message: 'Сессия истекла, войдите заново' });
+    }
+};
+
+module.exports = { registerUser, registerEmployee, login, logout, checkAuth };
