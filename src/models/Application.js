@@ -3,6 +3,7 @@ const sequelize = require('../config/database');
 const Employee = require('./Employee');
 const User = require('./User');
 const StatusApplication = require('./StatusApplication');
+const Tariff = require('./Tariff');
 
 const Application = sequelize.define(
     'application',
@@ -39,9 +40,19 @@ const Application = sequelize.define(
             },
             onDelete: 'CASCADE',
         },
+        id_tariff: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: Tariff,
+                key: 'id_tariff',
+            },
+            onDelete: 'CASCADE',
+        },
         date_of_creation: {
             type: DataTypes.DATE,
             allowNull: false,
+            defaultValue: DataTypes.NOW,
         },
     },
     {
@@ -53,5 +64,6 @@ const Application = sequelize.define(
 Application.belongsTo(Employee, { foreignKey: 'report_card_number' });
 Application.belongsTo(User, { foreignKey: 'id_user' });
 Application.belongsTo(StatusApplication, { foreignKey: 'id_status_application' });
+Application.belongsTo(Tariff, { foreignKey: 'id_tariff' });
 
 module.exports = Application;

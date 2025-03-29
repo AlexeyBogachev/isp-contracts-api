@@ -1,19 +1,58 @@
+const sequelize = require('../config/database');
 const Contract = require('../models/Contract');
 const Employee = require('../models/Employee');
 const Application = require('../models/Application');
 const StatusContract = require('../models/StatusContract');
+const User = require('../models/User');
 const Tariff = require('../models/Tariff');
 
 const getContracts = async (req, res) => {
     try {
         const contracts = await Contract.findAll({
             include: [
-                { model: Employee, attributes: ['surname', 'name'] },
-                { model: Application, attributes: ['date_of_creation'] },
-                { model: StatusContract, attributes: ['status_contract_name'] },
-                { model: Tariff, attributes: ['tariff_name'] },
+                {
+                    model: Employee,
+                    attributes: ['surname', 'name', 'patronymic']
+                },
+                {
+                    model: Application,
+                    attributes: ['date_of_creation', 'id_user'],
+                    include: [
+                        {
+                            model: Tariff,
+                            attributes: ['tariff_name', 'speed_mbps']
+                        }
+                    ]
+                },
+                {
+                    model: StatusContract,
+                    attributes: ['status_contract_name']
+                }
             ],
+            attributes: [
+                'id_contract', 'face_account', 'total_cost',
+                'date_of_conclusion', 'date_of_termination',
+                'contract_terms'
+            ]
         });
+
+        for (let contract of contracts) {
+            const { id_user } = contract.application;
+            const [user] = await sequelize.query(
+                `SELECT * FROM decrypted_users WHERE id_user = :id_user`, 
+                { replacements: { id_user }, type: sequelize.QueryTypes.SELECT }
+            );
+
+            if (user) {
+                contract.application.dataValues.user = {
+                    phone_number: user.phone_number,
+                    email: user.email
+                };
+            } else {
+                contract.application.dataValues.user = null;
+            }
+        }
+
         res.json(contracts);
     } catch (err) {
         res.status(500).json({ error: 'Ошибка при получении данных: ' + err.message });

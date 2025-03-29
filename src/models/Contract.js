@@ -3,7 +3,6 @@ const sequelize = require('../config/database');
 const Employee = require('./Employee');
 const Application = require('./Application');
 const StatusContract = require('./StatusContract');
-const Tariff = require('./Tariff');
 
 const Contract = sequelize.define(
     'contract',
@@ -40,15 +39,6 @@ const Contract = sequelize.define(
             },
             onDelete: 'CASCADE',
         },
-        id_tariff: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: Tariff,
-                key: 'id_tariff',
-            },
-            onDelete: 'CASCADE',
-        },
         face_account: {
             type: DataTypes.STRING(20),
             allowNull: false,
@@ -56,10 +46,6 @@ const Contract = sequelize.define(
         },
         total_cost: {
             type: DataTypes.DECIMAL(10, 2),
-            allowNull: false,
-        },
-        data_limit: {
-            type: DataTypes.INTEGER,
             allowNull: false,
         },
         date_of_conclusion: {
@@ -88,6 +74,5 @@ const Contract = sequelize.define(
 Contract.belongsTo(StatusContract, { foreignKey: 'id_status_contract' });
 Contract.belongsTo(Employee, { foreignKey: 'report_card_number' });
 Contract.belongsTo(Application, { foreignKey: 'id_application' });
-Contract.belongsTo(Tariff, { foreignKey: 'id_tariff' });
 
 module.exports = Contract;

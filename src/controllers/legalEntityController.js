@@ -24,7 +24,7 @@ const getLegalEntityByUserId = async (req, res) => {
 };
 
 const createLegalEntity = async (req, res) => {
-    const { id_user, name, TIN, registration_number, director_full_name, contact_person, contact_phone, actual_address, legal_address, website } = req.body;
+    const { id_user, name, tin, registration_number, director_full_name, contact_person, contact_phone, actual_address, legal_address, website } = req.body;
     
     try {
         const userExists = await User.findByPk(id_user);
@@ -35,7 +35,7 @@ const createLegalEntity = async (req, res) => {
         const newLegalEntity = await LegalEntity.create({
             id_user,
             name,
-            TIN,
+            tin,
             registration_number,
             director_full_name,
             contact_person,
@@ -52,7 +52,7 @@ const createLegalEntity = async (req, res) => {
 
 const updateLegalEntity = async (req, res) => {
     const { id } = req.params;
-    const { name, TIN, registration_number, director_full_name, contact_person, contact_phone, actual_address, legal_address, website } = req.body;
+    const { name, tin, registration_number, director_full_name, contact_person, contact_phone, actual_address, legal_address, website } = req.body;
     
     try {
         const legalEntity = await LegalEntity.findOne({ where: { id_user: id } });
@@ -61,7 +61,7 @@ const updateLegalEntity = async (req, res) => {
         }
 
         legalEntity.name = name || legalEntity.name;
-        legalEntity.TIN = TIN || legalEntity.TIN;
+        legalEntity.tin = tin || legalEntity.tin;
         legalEntity.registration_number = registration_number || legalEntity.registration_number;
         legalEntity.director_full_name = director_full_name || legalEntity.director_full_name;
         legalEntity.contact_person = contact_person || legalEntity.contact_person;

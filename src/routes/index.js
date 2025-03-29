@@ -7,6 +7,8 @@ const employeeRoutes = require('./employeeRoutes');
 const applicationRoutes = require('./applicationRoutes');
 const contractRoutes = require('./contractRoutes');
 const authRoutes = require('./authorization_routes/authRoutes');
+const statusApplicationRoutes = require('./statusApplicationRoutes');
+
 
 const router = express.Router();
 
@@ -18,5 +20,6 @@ router.use('/employees', employeeRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/contracts', contractRoutes);
 router.use('/auth', authRoutes);
+router.use('/status-applications', statusApplicationRoutes);
 
 module.exports = router;
