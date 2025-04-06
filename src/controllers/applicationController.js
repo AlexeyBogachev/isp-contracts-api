@@ -9,7 +9,7 @@ const getApplications = async (req, res) => {
     try {
         const applications = await Application.findAll({
             include: [
-                { model: Employee, attributes: ['surname', 'name'] },
+                { model: Employee, attributes: ['surname', 'name', 'report_card_number'] },
                 { model: StatusApplication, attributes: ['status_application_name', 'description'] },
                 { model: Tariff, attributes: ['tariff_name', 'speed_mbps', 'price'] },
             ],

@@ -131,15 +131,28 @@ const getContractById = async (req, res) => {
 };
 
 const createContract = async (req, res) => {
-    const { id_status_contract, report_card_number, id_application, id_tariff, face_account, total_cost, data_limit, date_of_conclusion, ip_address, date_of_termination, reason_for_termination_of_agreement, contract_terms } = req.body;
+    const {
+        id_status_contract,
+        report_card_number,
+        id_application,
+        face_account,
+        total_cost,
+        date_of_conclusion,
+        date_of_termination,
+        reason_for_termination_of_agreement,
+        contract_terms
+    } = req.body;
 
     try {
+        if (!id_status_contract || !report_card_number || !id_application || !face_account || !total_cost || !date_of_conclusion) {
+            return res.status(400).json({ message: 'Отсутствуют обязательные поля' });
+        }
+
         const employeeExists = await Employee.findByPk(report_card_number);
         const applicationExists = await Application.findByPk(id_application);
-        const tariffExists = await Tariff.findByPk(id_tariff);
         const statusExists = await StatusContract.findByPk(id_status_contract);
 
-        if (!employeeExists || !applicationExists || !tariffExists || !statusExists) {
+        if (!employeeExists || !applicationExists || !statusExists) {
             return res.status(404).json({ message: 'Ошибка: Невалидные данные для контракта' });
         }
 
@@ -147,12 +160,9 @@ const createContract = async (req, res) => {
             id_status_contract,
             report_card_number,
             id_application,
-            id_tariff,
             face_account,
             total_cost,
-            data_limit,
             date_of_conclusion,
-            ip_address,
             date_of_termination,
             reason_for_termination_of_agreement,
             contract_terms
@@ -166,7 +176,17 @@ const createContract = async (req, res) => {
 
 const updateContract = async (req, res) => {
     const { id } = req.params;
-    const { id_status_contract, report_card_number, id_application, id_tariff, face_account, total_cost, data_limit, date_of_conclusion, ip_address, date_of_termination, reason_for_termination_of_agreement, contract_terms } = req.body;
+    const {
+        id_status_contract,
+        report_card_number,
+        id_application,
+        face_account,
+        total_cost,
+        date_of_conclusion,
+        date_of_termination,
+        reason_for_termination_of_agreement,
+        contract_terms
+    } = req.body;
 
     try {
         const contract = await Contract.findOne({ where: { id_contract: id } });
@@ -178,17 +198,15 @@ const updateContract = async (req, res) => {
         contract.id_status_contract = id_status_contract || contract.id_status_contract;
         contract.report_card_number = report_card_number || contract.report_card_number;
         contract.id_application = id_application || contract.id_application;
-        contract.id_tariff = id_tariff || contract.id_tariff;
         contract.face_account = face_account || contract.face_account;
         contract.total_cost = total_cost || contract.total_cost;
-        contract.data_limit = data_limit || contract.data_limit;
         contract.date_of_conclusion = date_of_conclusion || contract.date_of_conclusion;
-        contract.ip_address = ip_address || contract.ip_address;
         contract.date_of_termination = date_of_termination || contract.date_of_termination;
         contract.reason_for_termination_of_agreement = reason_for_termination_of_agreement || contract.reason_for_termination_of_agreement;
         contract.contract_terms = contract_terms || contract.contract_terms;
 
         await contract.save();
+
         res.json(contract);
     } catch (err) {
         res.status(500).json({ error: 'Ошибка при обновлении контракта: ' + err.message });
