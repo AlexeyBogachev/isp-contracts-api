@@ -105,8 +105,6 @@ const getContracts = async (req, res) => {
     }
 };
 
-module.exports = { getContracts };
-
 const getContractById = async (req, res) => {
     const { id } = req.params;
     try {

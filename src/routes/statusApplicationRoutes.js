@@ -1,7 +1,6 @@
 const express = require('express');
-const statusApplicationController = require('../controllers/statusApplicationController');
-
 const router = express.Router();
+const statusApplicationController = require('../controllers/statusApplicationController');
 
 router.get('/', statusApplicationController.getStatusApplications);
 router.get('/:id', statusApplicationController.getStatusApplicationById);

@@ -136,10 +136,29 @@ const deleteApplication = async (req, res) => {
     }
 };
 
+const hasActiveApplication = async (req, res) => {
+    const { id_user } = req.params;
+
+    try {
+        const activeStatuses = [1, 2];
+        const application = await Application.findOne({
+            where: {
+                id_user,
+                id_status_application: activeStatuses
+            }
+        });
+
+        res.json({ hasActive: !!application });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка при проверке заявки: ' + err.message });
+    }
+};
+
 module.exports = {
     getApplications,
     getApplicationById,
     createApplication,
     updateApplication,
     deleteApplication,
+    hasActiveApplication
 };

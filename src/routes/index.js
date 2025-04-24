@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 const userRoutes = require('./userRoutes');
 const naturalPersonRoutes = require('./naturalPersonRoutes');
 const legalEntityRoutes = require('./legalEntityRoutes');
@@ -8,9 +9,7 @@ const applicationRoutes = require('./applicationRoutes');
 const contractRoutes = require('./contractRoutes');
 const authRoutes = require('./authorization_routes/authRoutes');
 const statusApplicationRoutes = require('./statusApplicationRoutes');
-
-
-const router = express.Router();
+const statusContractRoutes = require('./statusContractRoutes');
 
 router.use('/users', userRoutes);
 router.use('/natural-persons', naturalPersonRoutes);
@@ -21,5 +20,6 @@ router.use('/applications', applicationRoutes);
 router.use('/contracts', contractRoutes);
 router.use('/auth', authRoutes);
 router.use('/status-applications', statusApplicationRoutes);
+router.use('/status-contracts', statusContractRoutes);
 
 module.exports = router;

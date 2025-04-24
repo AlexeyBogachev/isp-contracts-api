@@ -1,7 +1,6 @@
 const express = require('express');
-const tariffController = require('../controllers/tariffController');
-
 const router = express.Router();
+const tariffController = require('../controllers/tariffController');
 
 router.get('/', tariffController.getTariffs);
 router.get('/:id', tariffController.getTariffById);

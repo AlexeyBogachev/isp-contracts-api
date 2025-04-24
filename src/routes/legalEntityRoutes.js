@@ -1,8 +1,7 @@
 const express = require('express');
+const router = express.Router();
 const legalEntityController = require('../controllers/legalEntityController');
 const authMiddleware = require('../middlewares/authMiddleware');
-
-const router = express.Router();
 
 router.get('/', authMiddleware, legalEntityController.getLegalEntities);
 router.get('/:id', authMiddleware, legalEntityController.getLegalEntityByUserId);
