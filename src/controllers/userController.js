@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
 
 const hashPassword = async (password) => {
@@ -8,8 +9,28 @@ const hashPassword = async (password) => {
 const getUsers = async (req, res) => {
     try {
         const users = await User.findAll();
-        res.json(users);
+
+        const usersWithDecryptedData = [];
+
+        for (let user of users) {
+            const [decryptedUser] = await sequelize.query(
+                `SELECT * FROM decrypted_users WHERE id_user = :id_user`,
+                { replacements: { id_user: user.id_user }, type: sequelize.QueryTypes.SELECT }
+            );
+
+            const userData = {
+                id_user: user.id_user,
+                phone_number: decryptedUser ? decryptedUser.phone_number : user.phone_number,
+                email: decryptedUser ? decryptedUser.email : user.email,
+                password: user.password
+            };
+
+            usersWithDecryptedData.push(userData);
+        }
+
+        res.json(usersWithDecryptedData);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Ошибка при получении пользователей: ' + err.message });
     }
 };

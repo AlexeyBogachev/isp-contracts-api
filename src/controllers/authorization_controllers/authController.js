@@ -16,8 +16,25 @@ const generateToken = (user, role) => {
 const registerUser = async (req, res) => {
     const { phone_number, email, password } = req.body;
     try {
-        const existingUser = await User.findOne({ where: { phone_number } });
-        if (existingUser) return res.status(400).json({ message: 'Пользователь уже существует' });
+        const [userByPhone] = await sequelize.query(
+            `SELECT * FROM decrypted_users WHERE phone_number = :phone_number`,
+            { replacements: { phone_number }, type: sequelize.QueryTypes.SELECT }
+        );
+
+        if (userByPhone) {
+            return res.status(400).json({ message: 'Пользователь с таким номером телефона уже существует' });
+        }
+
+        if (email) {
+            const [userByEmail] = await sequelize.query(
+                `SELECT * FROM decrypted_users WHERE email = :email`,
+                { replacements: { email }, type: sequelize.QueryTypes.SELECT }
+            );
+
+            if (userByEmail) {
+                return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+            }
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({ phone_number, email, password: hashedPassword });
@@ -53,7 +70,7 @@ const login = async (req, res) => {
             `SELECT * FROM decrypted_users WHERE phone_number = :phone_number`,
             { replacements: { phone_number }, type: sequelize.QueryTypes.SELECT }
         );
-        
+
         const [employee] = await sequelize.query(
             `SELECT * FROM decrypted_employees WHERE phone_number = :phone_number`,
             { replacements: { phone_number }, type: sequelize.QueryTypes.SELECT }
