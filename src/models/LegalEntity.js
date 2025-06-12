@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 const User = require('./User');
 
 const LegalEntity = sequelize.define(
-    'legal_entity', 
+    'legal_entity',
     {
         id_user: {
             type: DataTypes.INTEGER,
@@ -41,19 +41,15 @@ const LegalEntity = sequelize.define(
             type: DataTypes.STRING(20),
             allowNull: false
         },
-        actual_address: {
-            type: DataTypes.STRING(300),
-            allowNull: false
-        },
         legal_address: {
             type: DataTypes.STRING(300),
-            allowNull: true
+            allowNull: false
         },
         website: {
             type: DataTypes.STRING(300),
             allowNull: true
         }
-    }, 
+    },
     {
         tableName: 'legal_entity',
         timestamps: false

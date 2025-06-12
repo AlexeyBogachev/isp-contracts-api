@@ -42,7 +42,20 @@ const getUserById = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
-        res.json(user);
+
+        const [decryptedUser] = await sequelize.query(
+            `SELECT * FROM decrypted_users WHERE id_user = :id_user`,
+            { replacements: { id_user: id }, type: sequelize.QueryTypes.SELECT }
+        );
+
+        const userData = {
+            id_user: user.id_user,
+            phone_number: decryptedUser ? decryptedUser.phone_number : user.phone_number,
+            email: decryptedUser ? decryptedUser.email : user.email,
+            role: user.role
+        };
+
+        res.json(userData);
     } catch (err) {
         res.status(500).json({ error: 'Ошибка при получении пользователя: ' + err.message });
     }
@@ -63,17 +76,58 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const { phone_number, email, password } = req.body;
     try {
-        const user = await User.findOne({ where: { id_user: id } });
+        const [user] = await sequelize.query(
+            `SELECT * FROM decrypted_users WHERE id_user = :id`,
+            { replacements: { id }, type: sequelize.QueryTypes.SELECT }
+        );
+
         if (!user) {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
-        if (password) user.password = await hashPassword(password);
-        user.phone_number = phone_number || user.phone_number;
-        user.email = email || user.email;
-        await user.save();
-        res.json(user);
+
+        let updateFields = [];
+        let replacements = { id };
+
+        if (email !== undefined) {
+            updateFields.push(`email = :email`);
+            replacements.email = email;
+        }
+
+        if (phone_number !== undefined) {
+            updateFields.push(`phone_number = :phone_number`);
+            replacements.phone_number = phone_number;
+        }
+
+        if (password) {
+            const hashedPassword = await hashPassword(password);
+            updateFields.push(`password = :password`);
+            replacements.password = hashedPassword;
+        }
+
+        if (updateFields.length > 0) {
+            const updateQuery = `
+                UPDATE "user"
+                SET ${updateFields.join(', ')}
+                WHERE id_user = :id
+                RETURNING id_user
+            `;
+            await sequelize.query(updateQuery, {
+                replacements,
+                type: sequelize.QueryTypes.UPDATE
+            });
+        }
+
+        const [updatedUser] = await sequelize.query(
+            `SELECT * FROM decrypted_users WHERE id_user = :id`,
+            { replacements: { id }, type: sequelize.QueryTypes.SELECT }
+        );
+
+        res.json(updatedUser);
     } catch (err) {
-        res.status(500).json({ error: 'Ошибка при обновлении пользователя: ' + err.message });
+        res.status(500).json({
+            error: 'Ошибка при обновлении пользователя',
+            details: err.message
+        });
     }
 };
 

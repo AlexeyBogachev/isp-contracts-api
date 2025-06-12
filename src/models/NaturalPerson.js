@@ -37,12 +37,8 @@ const NaturalPerson = sequelize.define(
                 isIn: [['М', 'Ж']],
             },
         },
-        registration_address: {
-            type: DataTypes.STRING(300),
-            allowNull: true,
-        },
         residential_address: {
-            type: DataTypes.STRING(300),
+            type: DataTypes.STRING(900),
             allowNull: false,
         },
         passport_number: {

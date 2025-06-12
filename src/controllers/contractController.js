@@ -15,11 +15,11 @@ const getContracts = async (req, res) => {
                 },
                 {
                     model: Application,
-                    attributes: ['date_of_creation', 'id_user'],
+                    attributes: ['id_application', 'date_of_creation', 'id_user', 'connection_address', 'cost_application'],
                     include: [
                         {
                             model: Tariff,
-                            attributes: ['tariff_name', 'speed_mbps']
+                            attributes: ['tariff_name', 'speed_mbps', 'price']
                         }
                     ]
                 },
@@ -35,72 +35,108 @@ const getContracts = async (req, res) => {
             ]
         });
 
-        const userIds = contracts.map(contract => contract.application.id_user);
-        
+        const userIds = contracts
+            .map(contract => contract.application?.id_user)
+            .filter(id => id != null);
+
+        if (userIds.length === 0) {
+            return res.json([]);
+        }
+
         const usersData = await sequelize.query(
             `SELECT 
                 u.id_user, u.phone_number, u.email,
                 np.surname, np.name, np.patronymic, np.date_of_birth, np.gender,
-                np.registration_address, np.residential_address,
+                np.residential_address,
                 np.passport_number, np.passport_series,
                 le.name AS company_name, le.tin, le.registration_number, 
                 le.director_full_name, le.contact_person, le.contact_phone, 
-                le.actual_address, le.website
+                le.legal_address, le.website
             FROM decrypted_users u
             LEFT JOIN decrypted_natural_persons np ON u.id_user = np.id_user
             LEFT JOIN legal_entity le ON u.id_user = le.id_user
             WHERE u.id_user IN (:userIds)`,
-            { replacements: { userIds }, type: sequelize.QueryTypes.SELECT }
+            {
+                replacements: { userIds },
+                type: sequelize.QueryTypes.SELECT
+            }
         );
-        
+
         const usersMap = {};
         usersData.forEach(user => {
+            if (!user || !user.id_user) return;
+
             let userType = "Неизвестно";
             let userDetails = {};
-            
+
             if (user.surname) {
                 userType = "Физическое лицо";
                 userDetails = {
-                    surname: user.surname,
-                    name: user.name,
-                    patronymic: user.patronymic,
-                    date_of_birth: user.date_of_birth,
-                    gender: user.gender,
-                    registration_address: user.registration_address,
-                    residential_address: user.residential_address,
-                    passport_number: user.passport_number,
-                    passport_series: user.passport_series
+                    surname: user.surname || '',
+                    name: user.name || '',
+                    patronymic: user.patronymic || '',
+                    date_of_birth: user.date_of_birth || null,
+                    gender: user.gender || '',
+                    residential_address: user.residential_address || '',
+                    passport_number: user.passport_number || '',
+                    passport_series: user.passport_series || ''
                 };
             }
-            
+
             if (user.company_name) {
                 userType = "Юридическое лицо";
                 userDetails = {
-                    company_name: user.company_name,
-                    tin: user.tin,
-                    registration_number: user.registration_number,
-                    director_full_name: user.director_full_name,
-                    contact_person: user.contact_person,
-                    contact_phone: user.contact_phone,
-                    actual_address: user.actual_address,
-                    website: user.website
+                    company_name: user.company_name || '',
+                    tin: user.tin || '',
+                    registration_number: user.registration_number || '',
+                    director_full_name: user.director_full_name || '',
+                    contact_person: user.contact_person || '',
+                    contact_phone: user.contact_phone || '',
+                    legal_address: user.legal_address || '',
+                    website: user.website || ''
                 };
             }
 
             usersMap[user.id_user] = {
-                phone_number: user.phone_number,
-                email: user.email,
+                phone_number: user.phone_number || '',
+                email: user.email || '',
                 user_type: userType,
                 ...userDetails
             };
         });
 
-        contracts.forEach(contract => {
-            contract.application.dataValues.user = usersMap[contract.application.id_user] || null;
+        const processedContracts = contracts.map(contract => {
+            const processedContract = contract.toJSON();
+
+            if (contract.application?.id_user) {
+                processedContract.application.user = usersMap[contract.application.id_user] || {
+                    user_type: "Неизвестно",
+                    phone_number: "",
+                    email: "",
+                    name: "",
+                    surname: "",
+                    patronymic: "",
+                };
+            } else {
+                processedContract.application = {
+                    ...processedContract.application,
+                    user: {
+                        user_type: "Неизвестно",
+                        phone_number: "",
+                        email: "",
+                        name: "",
+                        surname: "",
+                        patronymic: "",
+                    }
+                };
+            }
+
+            return processedContract;
         });
 
-        res.json(contracts);
+        res.json(processedContracts);
     } catch (err) {
+        console.error('Ошибка при получении контрактов:', err);
         res.status(500).json({ error: 'Ошибка при получении данных: ' + err.message });
     }
 };

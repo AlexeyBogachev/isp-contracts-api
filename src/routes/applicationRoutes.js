@@ -8,6 +8,6 @@ router.get('/:id', authMiddleware, applicationController.getApplicationById);
 router.post('/', authMiddleware, applicationController.createApplication);
 router.put('/:id', authMiddleware, applicationController.updateApplication);
 router.delete('/:id', authMiddleware, applicationController.deleteApplication);
-router.get('/active/:id_user', applicationController.hasActiveApplication);
+router.get('/user/:userId/active', authMiddleware, applicationController.getActiveApplicationsByUser);
 
 module.exports = router;

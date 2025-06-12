@@ -49,10 +49,18 @@ const Application = sequelize.define(
             },
             onDelete: 'CASCADE',
         },
+        connection_address: {
+            type: DataTypes.STRING(300),
+            allowNull: false,
+        },
         date_of_creation: {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW,
+        },
+        cost_application: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: false,
         },
     },
     {
